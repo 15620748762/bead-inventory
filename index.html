@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+    <title>拼豆库存管理</title>
+    <style>
+        /* 极简风格，避免CSS问题 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+            font-size: 16px;
+            background: #f5f5f7;
+            color: #333;
+            padding: 15px;
+            line-height: 1.4;
+            -webkit-text-size-adjust: 100%;
+            touch-action: manipulation;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* 头部 */
+        .header {
+            background: #007AFF;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        /* 标签页 */
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: white;
+            color: #666;
+            font-size: 16px;
+            cursor: pointer;
+            text-align: center;
+            -webkit-appearance: none;
+        }
+        
+        .tab-btn.active {
+            background: #007AFF;
+            color: white;
+            font-weight: 600;
+        }
+        
+        /* 内容区域 */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* 搜索框 */
+        .search-box {
+            margin-bottom: 15px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            background: white;
+            -webkit-appearance: none;
+        }
+        
+        /* 颜色网格 - 简单列表布局 */
+        .color-list {
+            margin-bottom: 30px;
+        }
+        
+        .color-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .color-item.low {
+            border-left: 4px solid #FF3B30;
+        }
+        
+        .color-id {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .color-info {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .color-info div {
+            margin: 3px 0;
+        }
+        
+        /* 按钮组 */
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            -webkit-appearance: none;
+            user-select: none;
+        }
+        
+        .btn-add {
+            background: #34C759;
+            color: white;
+        }
+        
+        .btn-edit {
+            background: #007AFF;
+            color: white;
+        }
+        
+        .btn-use {
+            background: #FF9500;
+            color: white;
+        }
+        
+        .btn-primary {
+            background: #007AFF;
+            color: white;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        /* 表单 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            -webkit-appearance: none;
+        }
+        
+        /* 项目列表 */
+        .project-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .project-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .project-date {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+        
+        /* 模态框 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1000;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+            max-height: 80vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* 警报 */
+        .alert {
+            background: #FFE5E5;
+            border-left: 4px solid #FF3B30;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .alert.show {
+            display: block;
+        }
+        
+        /* 加载提示 */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧩 拼豆库存管理</h1>
+            <p>221种颜色库存管理 | 默认500颗</p>
+        </div>
+        
+        <!-- 标签导航 -->
+        <div class="tabs">
+            <button class="tab-btn active" id="btnInventory">库存</button>
+            <button class="tab-btn" id="btnProject">项目</button>
+            <button class="tab-btn" id="btnStats">统计</button>
+        </div>
+        
+        <!-- 库存页面 -->
+        <div id="tabInventory" class="tab-content active">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索颜色编号...">
+            </div>
+            
+            <div id="stockAlert" class="alert">
+                <div id="alertText"></div>
+            </div>
+            
+            <div id="colorList" class="color-list">
+                <div class="loading">加载中...</div>
+            </div>
+        </div>
+        
+        <!-- 项目页面 -->
+        <div id="tabProject" class="tab-content">
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px;">新建项目</h3>
+                <div class="form-group">
+                    <label class="form-label">项目名称</label>
+                    <input type="text" class="form-input" id="projectName" placeholder="输入项目名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">项目描述</label>
+                    <textarea class="form-input" id="projectDesc" placeholder="描述项目细节..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">选择使用的颜色</label>
+                    <div id="colorSelection" style="max-height: 200px; overflow-y: auto;">
+                        <div class="loading">加载颜色列表...</div>
+                    </div>
+                </div>
+                <button class="btn-primary" id="btnCreateProject">创建项目</button>
+            </div>
+            
+            <div style="background: white; padding: 20px; border-radius: 10px;">
+                <h3 style="margin-bottom: 15px;">历史项目</h3>
+                <div id="projectsList">
+                    <div class="loading">加载项目列表...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 统计页面 -->
+        <div id="tabStats" class="tab-content">
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px;">库存统计</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #007AFF;" id="statColors">0</div>
+                        <div style="font-size: 12px; color: #999;">颜色总数</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #007AFF;" id="statStock">0</div>
+                        <div style="font-size: 12px; color: #999;">当前库存</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #007AFF;" id="statUsed">0</div>
+                        <div style="font-size: 12px; color: #999;">总消耗量</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: #FF3B30;" id="statLow">0</div>
+                        <div style="font-size: 12px; color: #999;">需补充</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: white; padding: 20px; border-radius: 10px;">
+                <h3 style="margin-bottom: 15px;">需补充的颜色</h3>
+                <div id="lowStockList">
+                    <div class="loading">加载统计信息...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 库存操作弹窗 -->
+    <div id="stockModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px;" id="modalTitle">操作库存</h3>
+            <div id="modalContent">
+                <div class="loading">加载中...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 项目编辑弹窗 -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px;">编辑项目</h3>
+            <div id="editContent">
+                <div class="loading">加载中...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== 兼容性修复 ==========
+        // 确保在iOS Safari中localStorage可用
+        (function() {
+            var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            var isLocalFile = window.location.protocol === 'file:';
+            
+            if (isIOS && isLocalFile) {
+                console.log('检测到iOS Safari访问本地文件，启用兼容模式');
+                
+                // 使用内存存储作为后备方案
+                var memoryStorage = {};
+                var safeStorage = {
+                    setItem: function(key, value) {
+                        try {
+                            localStorage.setItem(key, value);
+                            memoryStorage[key] = value;
+                        } catch(e) {
+                            console.log('localStorage不可用，使用内存存储');
+                            memoryStorage[key] = value;
+                        }
+                    },
+                    getItem: function(key) {
+                        try {
+                            return localStorage.getItem(key) || memoryStorage[key] || null;
+                        } catch(e) {
+                            return memoryStorage[key] || null;
+                        }
+                    },
+                    removeItem: function(key) {
+                        try {
+                            localStorage.removeItem(key);
+                        } catch(e) {}
+                        delete memoryStorage[key];
+                    }
+                };
+                
+                // 替换原生的localStorage
+                window._originalLocalStorage = window.localStorage;
+                Object.defineProperty(window, 'localStorage', {
+                    value: safeStorage,
+                    writable: false
+                });
+            }
+        })();
+
+        // ========== 主程序 ==========
+        var colors = [];
+        var projects = [];
+        var editingProjectId = null;
+        
+        // 页面加载时初始化
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log("页面DOM加载完成");
+            
+            // 防止iOS缩放
+            document.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            });
+            
+            initData();
+            setupEventListeners();
+            loadInventory();
+        });
+        
+        // 防止双击缩放
+        var lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+            var now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // 初始化数据
+        function initData() {
+            console.log("开始初始化数据");
+            
+            try {
+                // 颜色系列定义
+                var colorSeries = {
+                    'A': 26, 'B': 32, 'C': 29, 'D': 26, 'E': 24, 
+                    'F': 25, 'G': 21, 'H': 23, 'M': 15
+                };
+                
+                // 尝试从本地存储加载数据
+                var savedColors = localStorage.getItem('bead_colors');
+                var savedProjects = localStorage.getItem('bead_projects');
+                
+                console.log("加载本地存储数据:", savedColors ? "有颜色数据" : "无颜色数据", savedProjects ? "有项目数据" : "无项目数据");
+                
+                if (savedColors && savedColors !== 'null' && savedColors !== 'undefined' && savedColors !== '') {
+                    try {
+                        colors = JSON.parse(savedColors);
+                        console.log("成功解析颜色数据，数量:", colors.length);
+                    } catch(e) {
+                        console.error("解析颜色数据失败，重新生成:", e);
+                        generateDefaultColors();
+                    }
+                } else {
+                    console.log("无保存的颜色数据，生成默认数据");
+                    generateDefaultColors();
+                }
+                
+                function generateDefaultColors() {
+                    colors = [];
+                    for (var series in colorSeries) {
+                        for (var i = 1; i <= colorSeries[series]; i++) {
+                            colors.push({
+                                id: series + i,
+                                series: series,
+                                current: 500,
+                                used: 0,
+                                lastUpdate: new Date().toLocaleDateString('zh-CN')
+                            });
+                        }
+                    }
+                    saveColors();
+                }
+                
+                if (savedProjects && savedProjects !== 'null' && savedProjects !== 'undefined' && savedProjects !== '') {
+                    try {
+                        projects = JSON.parse(savedProjects);
+                        console.log("成功解析项目数据，数量:", projects.length);
+                    } catch(e) {
+                        console.error("解析项目数据失败:", e);
+                        projects = [];
+                    }
+                } else {
+                    projects = [];
+                }
+                
+            } catch (e) {
+                console.error("初始化数据时出错:", e);
+                alert("数据初始化失败，请刷新页面重试");
+                colors = [];
+                projects = [];
+            }
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            console.log("设置事件监听器");
+            
+            // 标签页切换 - 使用touch和click事件
+            var inventoryBtn = document.getElementById('btnInventory');
+            var projectBtn = document.getElementById('btnProject');
+            var statsBtn = document.getElementById('btnStats');
+            
+            function addTabListener(btn, tabName) {
+                btn.addEventListener('click', function() { switchTab(tabName); });
+                btn.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    switchTab(tabName);
+                });
+            }
+            
+            addTabListener(inventoryBtn, 'inventory');
+            addTabListener(projectBtn, 'project');
+            addTabListener(statsBtn, 'stats');
+            
+            // 搜索功能
+            var searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', function() {
+                loadInventory(this.value);
+            });
+            searchInput.addEventListener('touchstart', function(e) {
+                e.stopPropagation();
+            });
+            
+            // 创建项目
+            var createBtn = document.getElementById('btnCreateProject');
+            createBtn.addEventListener('click', createProject);
+            createBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                createProject();
+            });
+            
+            // 模态框点击外部关闭
+            var modal = document.getElementById('stockModal');
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+            
+            var editModal = document.getElementById('editModal');
+            editModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.style.display = 'none';
+                }
+            });
+            
+            console.log("事件监听器设置完成");
+        }
+        
+        // 切换标签页
+        function switchTab(tabName) {
+            console.log("切换到标签页:", tabName);
+            
+            // 更新标签按钮
+            var buttons = document.querySelectorAll('.tab-btn');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('active');
+            }
+            document.getElementById('btn' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+            
+            // 更新内容
+            var contents = document.querySelectorAll('.tab-content');
+            for (var i = 0; i < contents.length; i++) {
+                contents[i].classList.remove('active');
+            }
+            document.getElementById('tab' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.add('active');
+            
+            // 标签页特定操作
+            if (tabName === 'inventory') {
+                loadInventory();
+            } else if (tabName === 'project') {
+                loadColorSelection();
+                loadProjectsList();
+            } else if (tabName === 'stats') {
+                loadStatistics();
+            }
+        }
+        
+        // 加载库存列表
+        function loadInventory(filter) {
+            console.log("加载库存，筛选:", filter || '无筛选');
+            var container = document.getElementById('colorList');
+            if (!container) {
+                console.error("找不到colorList容器");
+                return;
+            }
+            
+            container.innerHTML = '<div class="loading">加载中...</div>';
+            
+            // 延迟加载以确保DOM更新
+            setTimeout(function() {
+                var filteredColors = colors;
+                if (filter) {
+                    filteredColors = colors.filter(function(color) {
+                        return color.id.toLowerCase().indexOf(filter.toLowerCase()) > -1;
+                    });
+                }
+                
+                if (filteredColors.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">未找到匹配的颜色</div>';
+                    return;
+                }
+                
+                var html = '';
+                for (var i = 0; i < filteredColors.length; i++) {
+                    var color = filteredColors[i];
+                    var isLow = color.current < 300;
+                    
+                    html += '\
+                        <div class="color-item' + (isLow ? ' low' : '') + '">\
+                            <div class="color-id">' + color.id + ' (' + color.series + '系列)</div>\
+                            <div class="color-info">\
+                                <div>当前库存: <strong>' + color.current + '</strong> 颗</div>\
+                                <div>已消耗: ' + color.used + ' 颗</div>\
+                                <div>最后更新: ' + color.lastUpdate + '</div>\
+                            </div>\
+                            <div class="btn-group">\
+                                <button class="btn btn-add" onclick="showAddStock(\'' + color.id + '\')">补充</button>\
+                                <button class="btn btn-edit" onclick="showEditStock(\'' + color.id + '\')">修改</button>\
+                                <button class="btn btn-use" onclick="showUseStock(\'' + color.id + '\')">消耗</button>\
+                            </div>\
+                        </div>';
+                }
+                
+                container.innerHTML = html;
+                updateAlert();
+            }, 50);
+        }
+        
+        // 更新警报
+        function updateAlert() {
+            var lowColors = colors.filter(function(color) {
+                return color.current < 300;
+            });
+            
+            var alertDiv = document.getElementById('stockAlert');
+            var alertText = document.getElementById('alertText');
+            
+            if (lowColors.length > 0) {
+                var colorNames = lowColors.slice(0, 3).map(function(c) { return c.id; }).join(', ');
+                if (lowColors.length > 3) {
+                    colorNames += ' 等';
+                }
+                
+                alertText.textContent = '⚠️ 有 ' + lowColors.length + ' 种颜色需要补充：' + colorNames;
+                alertDiv.classList.add('show');
+            } else {
+                alertDiv.classList.remove('show');
+            }
+        }
+        
+        // 保存颜色数据
+        function saveColors() {
+            try {
+                localStorage.setItem('bead_colors', JSON.stringify(colors));
+                console.log("颜色数据保存成功");
+            } catch (e) {
+                console.error("保存颜色数据失败:", e);
+                alert("保存数据失败，请尝试使用在线版本");
+            }
+        }
+        
+        // 保存项目数据
+        function saveProjects() {
+            try {
+                localStorage.setItem('bead_projects', JSON.stringify(projects));
+                console.log("项目数据保存成功");
+            } catch (e) {
+                console.error("保存项目数据失败:", e);
+            }
+        }
+        
+        // 查找颜色
+        function findColor(colorId) {
+            for (var i = 0; i < colors.length; i++) {
+                if (colors[i].id === colorId) {
+                    return colors[i];
+                }
+            }
+            return null;
+        }
+        
+        // 显示补充库存弹窗
+        function showAddStock(colorId) {
+            var color = findColor(colorId);
+            if (!color) return;
+            
+            document.getElementById('modalTitle').textContent = '补充 ' + colorId;
+            document.getElementById('modalContent').innerHTML = '\
+                <div class="form-group">\
+                    <div style="margin-bottom: 10px;">当前库存: ' + color.current + ' 颗</div>\
+                    <input type="number" class="form-input" id="addQty" value="100" min="1" max="10000" placeholder="输入补充数量">\
+                </div>\
+                <button class="btn-primary" onclick="addStock(\'' + colorId + '\')">确认补充</button>';
+            
+            document.getElementById('stockModal').style.display = 'block';
+        }
+        
+        // 显示修改库存弹窗
+        function showEditStock(colorId) {
+            var color = findColor(colorId);
+            if (!color) return;
+            
+            document.getElementById('modalTitle').textContent = '修改 ' + colorId;
+            document.getElementById('modalContent').innerHTML = '\
+                <div class="form-group">\
+                    <div style="margin-bottom: 10px;">当前库存: ' + color.current + ' 颗</div>\
+                    <input type="number" class="form-input" id="newQty" value="' + color.current + '" min="0" max="10000" placeholder="输入新数量">\
+                </div>\
+                <button class="btn-primary" onclick="setStock(\'' + colorId + '\')">确认修改</button>';
+            
+            document.getElementById('stockModal').style.display = 'block';
+        }
+        
+        // 显示消耗库存弹窗
+        function showUseStock(colorId) {
+            var color = findColor(colorId);
+            if (!color) return;
+            
+            document.getElementById('modalTitle').textContent = '消耗 ' + colorId;
+            document.getElementById('modalContent').innerHTML = '\
+                <div class="form-group">\
+                    <div style="margin-bottom: 10px;">当前库存: ' + color.current + ' 颗</div>\
+                    <input type="number" class="form-input" id="useQty" value="10" min="1" max="' + color.current + '" placeholder="输入消耗数量">\
+                </div>\
+                <button class="btn-primary" onclick="useStock(\'' + colorId + '\')">确认消耗</button>';
+            
+            document.getElementById('stockModal').style.display = 'block';
+        }
+        
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('stockModal').style.display = 'none';
+        }
+        
+        // 补充库存
+        function addStock(colorId) {
+            var input = document.getElementById('addQty');
+            var qty = parseInt(input.value);
+            
+            if (isNaN(qty) || qty <= 0) {
+                alert('请输入有效的数量');
+                return;
+            }
+            
+            updateStock(colorId, qty, 'add');
+            closeModal();
+        }
+        
+        // 设置库存
+        function setStock(colorId) {
+            var input = document.getElementById('newQty');
+            var newQty = parseInt(input.value);
+            
+            if (isNaN(newQty) || newQty < 0) {
+                alert('请输入有效的数量');
+                return;
+            }
+            
+            var color = findColor(colorId);
+            var diff = newQty - color.current;
+            updateStock(colorId, diff, 'set');
+            closeModal();
+        }
+        
+        // 消耗库存
+        function useStock(colorId) {
+            var input = document.getElementById('useQty');
+            var qty = parseInt(input.value);
+            
+            if (isNaN(qty) || qty <= 0) {
+                alert('请输入有效的数量');
+                return;
+            }
+            
+            var color = findColor(colorId);
+            if (qty > color.current) {
+                alert('库存不足！当前只有 ' + color.current + ' 颗');
+                return;
+            }
+            
+            updateStock(colorId, -qty, 'use');
+            closeModal();
+        }
+        
+        // 更新库存
+        function updateStock(colorId, amount, type) {
+            var color = findColor(colorId);
+            if (!color) return;
+            
+            var oldStock = color.current;
+            
+            if (type === 'set') {
+                color.current = amount;
+            } else {
+                color.current += amount;
+                if (type === 'use') {
+                    color.used += Math.abs(amount);
+                }
+            }
+            
+            color.lastUpdate = new Date().toLocaleDateString('zh-CN');
+            saveColors();
+            
+            // 刷新显示
+            loadInventory(document.getElementById('searchInput').value);
+            
+            // 显示通知
+            var action = type === 'add' ? '补充' : type === 'use' ? '消耗' : '设置';
+            showMessage(action + ' ' + colorId + '：' + oldStock + ' → ' + color.current + ' 颗');
+        }
+        
+        // 显示消息
+        function showMessage(message) {
+            // 移除之前的消息
+            var oldMsg = document.querySelector('.message-notification');
+            if (oldMsg) oldMsg.remove();
+            
+            var msg = document.createElement('div');
+            msg.className = 'message-notification';
+            msg.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #34C759; color: white; padding: 10px 20px; border-radius: 8px; z-index: 2000; box-shadow: 0 2px 10px rgba(0,0,0,0.2); font-size: 14px;';
+            msg.textContent = '✅ ' + message;
+            
+            document.body.appendChild(msg);
+            
+            setTimeout(function() {
+                if (msg.parentNode) {
+                    msg.parentNode.removeChild(msg);
+                }
+            }, 3000);
+        }
+        
+        // 加载颜色选择
+        function loadColorSelection() {
+            var container = document.getElementById('colorSelection');
+            if (!container) return;
+            
+            container.innerHTML = '<div class="loading">加载颜色列表...</div>';
+            
+            setTimeout(function() {
+                if (colors.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">暂无颜色数据</div>';
+                    return;
+                }
+                
+                var html = '';
+                for (var i = 0; i < colors.length; i++) {
+                    var color = colors[i];
+                    html += '\
+                        <div style="display: flex; align-items: center; padding: 8px 0;">\
+                            <input type="checkbox" id="check_' + color.id + '" style="margin-right: 10px;">\
+                            <label for="check_' + color.id + '" style="flex: 1;">' + color.id + ' (' + color.current + '颗)</label>\
+                            <input type="number" id="qty_' + color.id + '" min="1" max="' + color.current + '" value="1" style="width: 60px; padding: 4px; border: 1px solid #ddd; border-radius: 4px; text-align: center;" disabled>\
+                        </div>';
+                }
+                
+                container.innerHTML = html;
+                
+                // 重新绑定事件
+                for (var i = 0; i < colors.length; i++) {
+                    var color = colors[i];
+                    var checkbox = document.getElementById('check_' + color.id);
+                    var qtyInput = document.getElementById('qty_' + color.id);
+                    
+                    if (checkbox && qtyInput) {
+                        checkbox.addEventListener('change', (function(input) {
+                            return function() {
+                                input.disabled = !this.checked;
+                            };
+                        })(qtyInput));
+                    }
+                }
+            }, 50);
+        }
+        
+        // 创建项目
+        function createProject() {
+            var name = document.getElementById('projectName').value.trim();
+            var desc = document.getElementById('projectDesc').value.trim();
+            
+            if (!name) {
+                alert('请输入项目名称');
+                return;
+            }
+            
+            // 获取选中的颜色和数量
+            var selectedColors = {};
+            var hasSelection = false;
+            
+            for (var i = 0; i < colors.length; i++) {
+                var color = colors[i];
+                var checkbox = document.getElementById('check_' + color.id);
+                var qtyInput = document.getElementById('qty_' + color.id);
+                
+                if (checkbox && checkbox.checked && qtyInput && qtyInput.value) {
+                    var qty = parseInt(qtyInput.value);
+                    if (!isNaN(qty) && qty > 0) {
+                        selectedColors[color.id] = qty;
+                        hasSelection = true;
+                    }
+                }
+            }
+            
+            if (!hasSelection) {
+                alert('请选择至少一种颜色');
+                return;
+            }
+            
+            // 检查库存
+            for (var colorId in selectedColors) {
+                var color = findColor(colorId);
+                if (color.current < selectedColors[colorId]) {
+                    alert(colorId + ' 库存不足！需要 ' + selectedColors[colorId] + ' 颗，当前只有 ' + color.current + ' 颗');
+                    return;
+                }
+            }
+            
+            // 创建项目
+            var project = {
+                id: Date.now(),
+                name: name,
+                desc: desc,
+                colors: selectedColors,
+                date: new Date().toLocaleString('zh-CN')
+            };
+            
+            projects.unshift(project);
+            
+            // 消耗库存
+            for (var colorId in selectedColors) {
+                var color = findColor(colorId);
+                color.current -= selectedColors[colorId];
+                color.used += selectedColors[colorId];
+                color.lastUpdate = new Date().toLocaleDateString('zh-CN');
+            }
+            
+            // 保存数据
+            saveColors();
+            saveProjects();
+            
+            // 重置表单
+            document.getElementById('projectName').value = '';
+            document.getElementById('projectDesc').value = '';
+            loadColorSelection();
+            loadProjectsList();
+            updateAlert();
+            
+            showMessage('项目 "' + name + '" 创建成功！');
+            switchTab('project');
+        }
+        
+        // 加载项目列表
+        function loadProjectsList() {
+            var container = document.getElementById('projectsList');
+            if (!container) return;
+            
+            container.innerHTML = '<div class="loading">加载项目列表...</div>';
+            
+            setTimeout(function() {
+                if (projects.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">暂无项目记录</div>';
+                    return;
+                }
+                
+                var html = '';
+                for (var i = 0; i < projects.length; i++) {
+                    var project = projects[i];
+                    var colorsHtml = '';
+                    
+                    for (var colorId in project.colors) {
+                        colorsHtml += '<span style="background: #f0f0f0; padding: 4px 8px; margin: 2px; border-radius: 4px; font-size: 12px;">' + colorId + ': ' + project.colors[colorId] + '颗</span>';
+                    }
+                    
+                    html += '\
+                        <div class="project-item">\
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">\
+                                <div class="project-title">' + project.name + '</div>\
+                                <div>\
+                                    <button onclick="editProject(' + project.id + ')" style="background: #007AFF; color: white; border: none; padding: 4px 8px; border-radius: 4px; margin-right: 5px; font-size: 12px;">编辑</button>\
+                                    <button onclick="deleteProject(' + project.id + ')" style="background: #FF3B30; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px;">删除</button>\
+                                </div>\
+                            </div>\
+                            <div class="project-date">' + project.date + '</div>\
+                            <div style="margin: 10px 0;">' + (project.desc || '无描述') + '</div>\
+                            <div>' + colorsHtml + '</div>\
+                        </div>';
+                }
+                
+                container.innerHTML = html;
+            }, 50);
+        }
+        
+        // 编辑项目
+        function editProject(projectId) {
+            var project = null;
+            for (var i = 0; i < projects.length; i++) {
+                if (projects[i].id === projectId) {
+                    project = projects[i];
+                    break;
+                }
+            }
+            
+            if (!project) return;
+            
+            editingProjectId = projectId;
+            
+            // 生成编辑表单
+            var colorsHtml = '';
+            for (var i = 0; i < colors.length; i++) {
+                var color = colors[i];
+                var isSelected = project.colors[color.id];
+                
+                colorsHtml += '\
+                    <div style="display: flex; align-items: center; padding: 8px 0;">\
+                        <input type="checkbox" id="edit_check_' + color.id + '" ' + 
+                               (isSelected ? 'checked' : '') + ' style="margin-right: 10px;">\
+                        <label for="edit_check_' + color.id + '" style="flex: 1;">' + color.id + ' (' + color.current + '颗)</label>\
+                        <input type="number" id="edit_qty_' + color.id + '" \
+                               value="' + (isSelected ? project.colors[color.id] : 1) + '" \
+                               min="1" max="' + color.current + '" style="width: 60px; padding: 4px; border: 1px solid #ddd; border-radius: 4px; text-align: center;" ' + 
+                               (isSelected ? '' : 'disabled') + '>\
+                    </div>';
+            }
+            
+            document.getElementById('editContent').innerHTML = '\
+                <div class="form-group">\
+                    <label class="form-label">项目名称</label>\
+                    <input type="text" class="form-input" id="editName" value="' + project.name + '">\
+                </div>\
+                <div class="form-group">\
+                    <label class="form-label">项目描述</label>\
+                    <textarea class="form-input" id="editDesc" rows="3">' + (project.desc || '') + '</textarea>\
+                </div>\
+                <div class="form-group">\
+                    <label class="form-label">修改使用颜色</label>\
+                    <div style="max-height: 200px; overflow-y: auto;">' + colorsHtml + '</div>\
+                </div>\
+                <button class="btn-primary" onclick="saveProjectEdit()">保存修改</button>';
+            
+            document.getElementById('editModal').style.display = 'block';
+            
+            // 绑定复选框事件
+            setTimeout(function() {
+                for (var i = 0; i < colors.length; i++) {
+                    var color = colors[i];
+                    var checkbox = document.getElementById('edit_check_' + color.id);
+                    var qtyInput = document.getElementById('edit_qty_' + color.id);
+                    
+                    if (checkbox && qtyInput) {
+                        checkbox.addEventListener('change', (function(input) {
+                            return function() {
+                                input.disabled = !this.checked;
+                            };
+                        })(qtyInput));
+                    }
+                }
+            }, 100);
+        }
+        
+        // 保存项目编辑
+        function saveProjectEdit() {
+            if (!editingProjectId) return;
+            
+            var projectIndex = -1;
+            var oldProject = null;
+            
+            for (var i = 0; i < projects.length; i++) {
+                if (projects[i].id === editingProjectId) {
+                    projectIndex = i;
+                    oldProject = projects[i];
+                    break;
+                }
+            }
+            
+            if (projectIndex === -1) return;
+            
+            var newName = document.getElementById('editName').value.trim();
+            var newDesc = document.getElementById('editDesc').value.trim();
+            
+            if (!newName) {
+                alert('请输入项目名称');
+                return;
+            }
+            
+            // 获取新的颜色选择
+            var newColors = {};
+            for (var i = 0; i < colors.length; i++) {
+                var color = colors[i];
+                var checkbox = document.getElementById('edit_check_' + color.id);
+                var qtyInput = document.getElementById('edit_qty_' + color.id);
+                
+                if (checkbox && checkbox.checked && qtyInput && qtyInput.value) {
+                    var qty = parseInt(qtyInput.value);
+                    if (!isNaN(qty) && qty > 0) {
+                        newColors[color.id] = qty;
+                    }
+                }
+            }
+            
+            if (Object.keys(newColors).length === 0) {
+                alert('请选择至少一种颜色');
+                return;
+            }
+            
+            // 恢复旧项目的库存
+            for (var colorId in oldProject.colors) {
+                var color = findColor(colorId);
+                if (color) {
+                    color.current += oldProject.colors[colorId];
+                    color.used -= oldProject.colors[colorId];
+                }
+            }
+            
+            // 应用新项目的库存消耗
+            for (var colorId in newColors) {
+                var color = findColor(colorId);
+                if (color) {
+                    color.current -= newColors[colorId];
+                    color.used += newColors[colorId];
+                    color.lastUpdate = new Date().toLocaleDateString('zh-CN');
+                }
+            }
+            
+            // 更新项目
+            projects[projectIndex] = {
+                id: oldProject.id,
+                name: newName,
+                desc: newDesc,
+                colors: newColors,
+                date: new Date().toLocaleString('zh-CN')
+            };
+            
+            saveColors();
+            saveProjects();
+            document.getElementById('editModal').style.display = 'none';
+            loadProjectsList();
+            loadInventory();
+            updateAlert();
+            
+            showMessage('项目修改成功！');
+        }
+        
+        // 删除项目
+        function deleteProject(projectId) {
+            if (!confirm('确定要删除这个项目吗？')) {
+                return;
+            }
+            
+            var projectIndex = -1;
+            var project = null;
+            
+            for (var i = 0; i < projects.length; i++) {
+                if (projects[i].id === projectId) {
+                    projectIndex = i;
+                    project = projects[i];
+                    break;
+                }
+            }
+            
+            if (projectIndex === -1) return;
+            
+            // 恢复库存
+            for (var colorId in project.colors) {
+                var color = findColor(colorId);
+                if (color) {
+                    color.current += project.colors[colorId];
+                    color.used -= project.colors[colorId];
+                    color.lastUpdate = new Date().toLocaleDateString('zh-CN');
+                }
+            }
+            
+            // 删除项目
+            projects.splice(projectIndex, 1);
+            
+            saveColors();
+            saveProjects();
+            loadProjectsList();
+            loadInventory();
+            updateAlert();
+            
+            showMessage('项目已删除，库存已恢复！');
+        }
+        
+        // 加载统计
+        function loadStatistics() {
+            var totalStock = 0;
+            var totalUsed = 0;
+            var lowCount = 0;
+            
+            for (var i = 0; i < colors.length; i++) {
+                totalStock += colors[i].current;
+                totalUsed += colors[i].used;
+                if (colors[i].current < 300) {
+                    lowCount++;
+                }
+            }
+            
+            document.getElementById('statColors').textContent = colors.length;
+            document.getElementById('statStock').textContent = totalStock;
+            document.getElementById('statUsed').textContent = totalUsed;
+            document.getElementById('statLow').textContent = lowCount;
+            
+            // 加载低库存列表
+            var lowList = document.getElementById('lowStockList');
+            var lowColors = colors.filter(function(color) {
+                return color.current < 300;
+            });
+            
+            if (lowColors.length === 0) {
+                lowList.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">🎉 所有库存充足！</div>';
+            } else {
+                var html = '';
+                for (var i = 0; i < lowColors.length; i++) {
+                    var color = lowColors[i];
+                    html += '\
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #FFE5E5; border-radius: 8px; margin-bottom: 8px;">\
+                            <div>\
+                                <strong>' + color.id + '</strong>\
+                                <div style="font-size: 12px; color: #666;">' + color.series + '系列</div>\
+                            </div>\
+                            <div style="text-align: right;">\
+                                <div style="color: #FF3B30; font-weight: bold;">' + color.current + ' 颗</div>\
+                                <button onclick="showAddStock(\'' + color.id + '\')" style="background: #34C759; color: white; border: none; padding: 4px 8px; border-radius: 4px; margin-top: 4px; font-size: 12px;">补充</button>\
+                            </div>\
+                        </div>';
+                }
+                lowList.innerHTML = html;
+            }
+        }
+        
+        // 全局导出函数
+        window.switchTab = switchTab;
+        window.showAddStock = showAddStock;
+        window.showEditStock = showEditStock;
+        window.showUseStock = showUseStock;
+        window.closeModal = closeModal;
+        window.addStock = addStock;
+        window.setStock = setStock;
+        window.useStock = useStock;
+        window.createProject = createProject;
+        window.editProject = editProject;
+        window.saveProjectEdit = saveProjectEdit;
+        window.deleteProject = deleteProject;
+    </script>
+</body>
+</html>
